@@ -3,71 +3,38 @@ name: c-cpp-linter
 on:
   pull_request:
     branches: [main]
-    paths: ['**.c', '**.cpp', '**.h', '**.hpp', '**.cc', '**.hh', '**.cxx', '**.hxx']
+    paths:
+      - "**.c"
+      - "**.cpp"
+      - "**.h"
+      - "**.hpp"
+      - "**.cc"
+      - "**.hh"
+      - "**.cxx"
+      - "**.hxx"
   workflow_call:
 
 jobs:
   c-cpp-linter:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4.1.0
-        
-      - uses: cpp-linter/cpp-linter-action@v2.6.1
+
+      - name: Linting source code
+        uses: cpp-linter/cpp-linter-action@v2.16.6
         id: linter
-        continue-on-error: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          style: file
-          tidy-checks: '-*'
-          thread-comments: true
-          step-summary: true
+          style: "file"
+          thread-comments: "update"
+          tidy-review: true
+          format-review: true
 
-      - name: Fail checks
+      - name: Linting status check
         if: steps.linter.outputs.checks-failed > 0
-        run: |
-          echo "Some files failed the linting checks!"
-          echo "No. of checks failed: ${{ steps.linter.outputs.checks-failed }}"
-          echo "Use the clang-format diffs to find more help"
-
-      - name: Setup Python
-        if: steps.linter.outputs.checks-failed > 0
-        uses: actions/setup-python@v4.7.1
-        with:
-           python-version: '3.12'
-
-      - name: Getting PR details
-        if: steps.linter.outputs.checks-failed > 0
-        run: |
-          touch pr.json                                 # creating empty file for paths
-          gh pr view $PR_NUMBER --json files > pr.json  # storing file paths
-          touch res                                     # creating empty file for final output
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Python script for clang diff
-        if: steps.linter.outputs.checks-failed > 0
-        uses: jannekem/run-python-script-action@v1
-        with:
-          script: |
-            import os
-            import json
-            import sys
-            with open('pr.json','r') as json_file:
-              data = json.load(json_file)
-              for file in data["files"]:
-                path = file["path"]
-                if os.path.exists(path):
-                  os.system('echo "" >> res')
-                  os.system(f'echo "Filename: {path}" >> res')
-                  os.system('echo "" >> res')
-                  os.system(f'clang-format-12 -style=Google {path} >> res')
-                  os.system('echo ---------------------------------------- >> res')
-
-      - name: Show diffs and exit
-        if: steps.linter.outputs.checks-failed > 0
-        run: |
-          cat res
-          exit 1
+        run: exit 1
