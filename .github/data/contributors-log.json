@@ -25,5 +25,14 @@
       "4"
     ],
     "demo-path": "https://github.com/Grow-with-Open-Source/C-CPP-Projects/tree/main/.github"
+  },
+  "{workflows}": {
+    "contributor-name": [
+      "iamwatchdogs"
+    ],
+    "pull-request-number": [
+      "8"
+    ],
+    "demo-path": "https://github.com/Grow-with-Open-Source/C-CPP-Projects/tree/main/.github/workflows"
   }
 }
